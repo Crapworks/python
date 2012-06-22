@@ -17,16 +17,38 @@ class TCPServerChild(Thread):
         
         self.socket, self.address = socket
         
-    def read(self, bytes=1024, timeout=None):
+    def recv(self, bytes=1024, timeout=None):
+        """
+        recv: read n bytes from socket. optional timeout
+        @bytes: max bytes to read from the socket
+        @timeout: timeout for the read procedure in seconds
+        """
+
         if timeout:
             readable, writable, errored = select([self.socket, ], [], [], timeout)
-            if self.sock in readable:
+            if self.socket in readable:
                 return self.socket.recv(bytes)
             else:
                 return None
         else:
             return self.socket.recv(bytes)
-        
+
+    def send(self, data, timeout=None):
+        """
+        send: write data to the socket. optional timeout
+        @data: data (str) to send to the socket
+        @timeout: timeout for the send procedure in seconds
+        """
+
+        if timeout:
+            readable, writable, errored = select([self.socket, ], [], [], timeout)
+            if self.socket in writable:
+                return self.socket.send(data)
+            else:
+                return None                
+        else:
+            return self.socket.send(data)
+
     def run(self):
         """ overwrite with initial server function """
         
@@ -72,8 +94,57 @@ class TCPServer(object):
                 if not thread.is_alive():
                     self.thread_pool.remove(thread)
     
-            print len(self.thread_pool)
-            
+            #print len(self.thread_pool)
+
+class TCPClient(object):
+    """
+    TCPClient class: connects to a tcp server and communicates via tcp protocol
+    @host: host / ip address to connect to
+    @prot: remote tcp port to connect to
+    """
+
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.host, self.port))
+
+    def recv(self, bytes=1024, timeout=None):
+        """
+        recv: read n bytes from socket. optional timeout
+        @bytes: max bytes to read from the socket
+        @timeout: timeout for the read procedure in seconds
+        """
+
+        if timeout:
+            readable, writable, errored = select([self.socket, ], [], [], timeout)
+            if self.sock in readable:
+                return self.socket.recv(bytes)
+            else:
+                return None
+        else:
+            return self.socket.recv(bytes)
+
+    def send(self, data, timeout=None):
+        """
+        send: write data to the socket. optional timeout
+        @data: data (str) to send to the socket
+        @timeout: timeout for the send procedure in seconds
+        """
+
+        if timeout:
+            readable, writable, errored = select([self.socket, ], [], [], timeout)
+            if self.sock in writable:
+                return self.socket.send(data)
+            else:
+                return None                
+        else:
+            return self.socket.send(data)
+
+    def close(self):
+        self.socket.close()
+
 if __name__ == '__main__':
     server = TCPServer(('127.0.0.1', 6666), TCPEchoServer)
     server.serve_forever()
