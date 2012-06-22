@@ -119,7 +119,7 @@ class TCPClient(object):
 
         if timeout:
             readable, writable, errored = select([self.socket, ], [], [], timeout)
-            if self.sock in readable:
+            if self.socket in readable:
                 return self.socket.recv(bytes)
             else:
                 return None
@@ -135,7 +135,7 @@ class TCPClient(object):
 
         if timeout:
             readable, writable, errored = select([self.socket, ], [], [], timeout)
-            if self.sock in writable:
+            if self.socket in writable:
                 return self.socket.send(data)
             else:
                 return None                
